@@ -13,8 +13,16 @@
     I: [0x3F, 0x51, 0xB5]
   }
 
-  function mirror(sett) {
-    if (sett.length > 2 && sett[0].indexOf('/') == 1 && sett[sett.length - 1].indexOf('/') == 1) {
+  function extractColors(sett) {
+    return sett.replace(/([A-Z]+)(#|=){1}([0-9A-F]+)[^;]*;/gi, function(m, n, s, c){
+      var color = parseInt('0x' + c);
+      colors[n] = [(color & 0xFF0000) >> 16, (color & 0x00FF00) >> 8, color & 0x0000FF]
+      return '';
+    });
+  }
+
+  function mirror(sett) { 
+    if (sett.length > 2 && sett[0].match('/') && sett[sett.length - 1].match('/')) {
       sett[0] = sett[0].replace('/', '');
       sett[sett.length - 1] = sett[sett.length - 1].replace('/', '');
       for (var i = sett.length - 2; i > 0; i--) {
@@ -25,12 +33,11 @@
   }
 
   function parse(sett) {
-    var threads = mirror(sett.split(' ').filter(function(n){
-      return n != undefined;
-    })).map(function (t) {
+    var threads = mirror(sett.match(/[A-Z]+\/?[0-9]+/gi)).map(function (t) {
+      var [c, w] = t.match(/[A-Z]+|[0-9]+/gi);
       return {
-        color: colors[t[0]] ? colors[t[0]] : colors['W'],
-        width: parseInt(t.substring(1))
+        color: colors[c] ? colors[c] : colors['W'],
+        width: parseInt(w)
       }
     });
     return {
@@ -74,6 +81,7 @@
     var canvas = document.getElementById("tartan");
     canvas.width  = window.innerWidth;
     canvas.height = window.innerHeight;
-    render(canvas, parse(window.location.hash.substr(1)));
+    var sett = extractColors(window.location.hash.substr(1));
+    render(canvas, parse(sett));
   });
 })();
