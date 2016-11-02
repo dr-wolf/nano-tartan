@@ -21,7 +21,7 @@
     });
   }
 
-  function mirror(sett) { 
+  function mirror(sett) {
     if (sett.length > 2 && sett[0].match('/') && sett[sett.length - 1].match('/')) {
       sett[0] = sett[0].replace('/', '');
       sett[sett.length - 1] = sett[sett.length - 1].replace('/', '');
@@ -81,7 +81,10 @@
     var canvas = document.getElementById("tartan");
     canvas.width  = window.innerWidth;
     canvas.height = window.innerHeight;
-    var sett = extractColors(window.location.hash.substr(1));
-    render(canvas, parse(sett));
+    document.getElementById('sett').value = window.location.hash.substr(1) ? window.location.hash.substr(1) : "B32 Y32";
+    document.getElementById('render').addEventListener('click', function() {
+      render(canvas, parse(extractColors(document.getElementById('sett').value)));
+    }, false);
+    render(canvas, parse(extractColors(document.getElementById('sett').value)));
   });
 })();
