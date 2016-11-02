@@ -14,7 +14,7 @@
   }
 
   function extractColors(sett) {
-    return sett.replace(/([A-Z]+)(#|=){1}([0-9A-F]+)[^;]*;/gi, function(m, n, s, c){
+    return sett.replace(/([A-Z]+)(#|=){1}([0-9A-F]{6})[^;]*;/gi, function(m, n, s, c){
       var color = parseInt('0x' + c);
       colors[n] = [(color & 0xFF0000) >> 16, (color & 0x00FF00) >> 8, color & 0x0000FF]
       return '';
