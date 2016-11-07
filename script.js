@@ -14,7 +14,7 @@
   }
 
   function extractColors(sett) {
-    return sett.replace(/([A-Z]+)(#|=){1}([0-9A-F]{6})[^;]*;/gi, function(m, n, s, c){
+    return sett.replace(/([A-Z]+)(#|=)([0-9A-F]{6})[^;]*;/gi, function(m, n, s, c){
       var color = parseInt('0x' + c);
       colors[n] = [(color & 0xFF0000) >> 16, (color & 0x00FF00) >> 8, color & 0x0000FF]
       return '';
@@ -48,40 +48,63 @@
     }
   }
 
-  function thread(sett, number) {
-    number %= sett.width;
-    var i = 0;
-    while (sett.threads[i].width <= number) {
-      number -= sett.threads[i].width;
-      i++;
-    }
-    return sett.threads[i];
+  function sarge(x, y) {
+    return Math.abs(x - y) % 4 < 2 ? 0 : 1;
   }
 
-  function sarge(x, y) {
-    return (Math.abs(x - y) % 4 < 2) ? x : y;
+  function mix(posx, posy, width, height, colors) {
+    var blob = new Uint8ClampedArray(4 * width * height);
+    for (var y = 0; y < height; y++) {
+      for (var x = 0; x < width; x++) {
+        var t = colors[sarge(posx + x, posy + y)];
+        blob[(y * width + x) * 4 + 3] = 255;
+        for (var c = 0; c < 3; c++) {
+          blob[(y * width + x) * 4 + c] = t[c];
+        }
+      }
+    }
+    return new ImageData(blob, width, height);
+  }
+
+  function multiply(canvas, width, height) {
+    var ctx = canvas.getContext("2d");
+    var patt = ctx.getImageData(0, 0, width, height);
+    var y = 0;
+    while (y < canvas.height) {
+      var x = 0;
+      while (x < canvas.width) {
+        ctx.putImageData(patt, x, y);
+        x += width;
+      }
+      y += height;
+    }
   }
 
   function render(canvas, sett) {
     var ctx = canvas.getContext("2d");
-    var img = ctx.getImageData(0, 0, canvas.width, canvas.height);
-    for (var y = 0; y < canvas.height; y++) {
-      for (var x = 0; x < canvas.width; x++) {
-        var t = thread(sett, sarge(x, y));
-        img.data[(y * canvas.width + x) * 4 + 3] = 255;
-        for (var c = 0; c < 3; c++) {
-          img.data[(y * canvas.width + x) * 4 + c] = t.color[c];
+    var py = 0;
+    for (var y = 0; y < sett.threads.length; y++) {
+      var px = 0;
+      for (var x = 0; x < sett.threads.length; x++) {
+        if (sett.threads[x].color == sett.threads[y].color) {
+          ctx.fillStyle = "rgb(" + sett.threads[y].color.join(",") + ")";
+          ctx.fillRect(px, py, sett.threads[x].width, sett.threads[y].width);
+        } else {
+          ctx.putImageData(mix(px, py, sett.threads[x].width, sett.threads[y].width,
+            [sett.threads[x].color, sett.threads[y].color]), px, py);
         }
+        px += sett.threads[x].width;
       }
+      py += sett.threads[y].width;
     }
-    ctx.putImageData(img, 0, 0);
+    multiply(canvas, sett.width, sett.width);
   }
 
   document.addEventListener("DOMContentLoaded", function(event) {
     var canvas = document.getElementById("tartan");
     canvas.width  = window.innerWidth;
     canvas.height = window.innerHeight;
-    document.getElementById('sett').value = window.location.hash.substr(1) ? window.location.hash.substr(1) : "B32 Y32";
+    document.getElementById('sett').value = window.location.hash.substr(1) ? decodeURIComponent(window.location.hash.substr(1)) : "B32 Y32";
     document.getElementById('render').addEventListener('click', function() {
       render(canvas, parse(extractColors(document.getElementById('sett').value)));
     }, false);
