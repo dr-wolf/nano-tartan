@@ -1,24 +1,26 @@
 (function(){
-  var colors = {
-    B: [0x21, 0x96, 0xF3],
-    G: [0x43, 0xA0, 0x47],
-    K: [0x00, 0x00, 0x00],
-    N: [0x9E, 0x9E, 0x9E],
-    O: [0xFF, 0x98, 0x00],
-    R: [0xF4, 0x43, 0x36],
-    T: [0x79, 0x55, 0x48],
-    W: [0xFF, 0xFF, 0xFF],
-    Y: [0xFF, 0xEB, 0x3B],
-    P: [0x9C, 0x27, 0xB0],
-    I: [0x3F, 0x51, 0xB5]
-  }
-
-  function extractColors(sett) {
-    return sett.replace(/([A-Z]+)(#|=)([0-9A-F]{6})[^;]*;/gi, function(m, n, s, c){
-      var color = parseInt('0x' + c);
-      colors[n] = [(color & 0xFF0000) >> 16, (color & 0x00FF00) >> 8, color & 0x0000FF]
-      return '';
-    });
+  function prepare(sett) {
+    var colors = {
+      B: [0x21, 0x96, 0xF3],
+      G: [0x43, 0xA0, 0x47],
+      K: [0x00, 0x00, 0x00],
+      N: [0x9E, 0x9E, 0x9E],
+      O: [0xFF, 0x98, 0x00],
+      R: [0xF4, 0x43, 0x36],
+      T: [0x79, 0x55, 0x48],
+      W: [0xFF, 0xFF, 0xFF],
+      Y: [0xFF, 0xEB, 0x3B],
+      P: [0x9C, 0x27, 0xB0],
+      I: [0x3F, 0x51, 0xB5]
+    };
+    return {
+      sett:  sett.replace(/([A-Z]+)(#|=|=#)([0-9A-F]{6})[^;]*;/gi, function(m, n, s, c){
+        var color = parseInt('0x' + c);
+        colors[n] = [(color & 0xFF0000) >> 16, (color & 0x00FF00) >> 8, color & 0x0000FF];
+        return '';
+      }),
+      palette: colors
+    };
   }
 
   function mirror(sett) {
@@ -32,20 +34,20 @@
     return sett;
   }
 
-  function parse(sett) {
+  function parse({sett, palette}) {
     var threads = mirror(sett.match(/[A-Z]+\/?[0-9]+/gi)).map(function (t) {
       var [c, w] = t.match(/[A-Z]+|[0-9]+/gi);
       return {
-        color: colors[c] ? colors[c] : colors['W'],
+        color: palette[c] ? palette[c] : palette['W'],
         width: parseInt(w)
-      }
+      };
     });
     return {
       threads: threads,
       width: threads.reduce(function(w, t){
         return w + t.width;
       }, 0)
-    }
+    };
   }
 
   function sarge(x, y) {
@@ -106,7 +108,7 @@
     var canvas = document.getElementById("tartan");
     document.getElementById('sett').value = window.location.hash.substr(1) ? decodeURIComponent(window.location.hash.substr(1)) : "B32 Y32";
     var update = function() {
-      render(canvas, parse(extractColors(document.getElementById('sett').value)));
+      render(canvas, parse(prepare(document.getElementById('sett').value)));
     };
     document.getElementById('render').addEventListener('click', update, false);
     window.addEventListener('resize', update);
