@@ -81,6 +81,8 @@
   }
 
   function render(canvas, sett) {
+    canvas.width = canvas.clientWidth;
+    canvas.height = canvas.clientHeight;
     var ctx = canvas.getContext("2d");
     var py = 0;
     for (var y = 0; y < sett.threads.length; y++) {
@@ -105,9 +107,11 @@
     canvas.width  = window.innerWidth;
     canvas.height = window.innerHeight;
     document.getElementById('sett').value = window.location.hash.substr(1) ? decodeURIComponent(window.location.hash.substr(1)) : "B32 Y32";
-    document.getElementById('render').addEventListener('click', function() {
+    var update = function() {
       render(canvas, parse(extractColors(document.getElementById('sett').value)));
-    }, false);
-    render(canvas, parse(extractColors(document.getElementById('sett').value)));
+    };
+    document.getElementById('render').addEventListener('click', update, false);
+    window.addEventListener('resize', update);
+    update();
   });
 })();
