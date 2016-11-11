@@ -96,7 +96,7 @@
                     e.parentNode.insertBefore(thread.cloneNode(), e);
                     e.parentNode.insertBefore(thread.cloneNode(), e.nextSibling);
                 }
-                e.style.width = (e.clientWidth + d) + "px";
+                e.style.width = Math.floor(e.offsetWidth + d) + "px";
                 if (e.clientWidth == 0) {
                     if (e.nextSibling && e.nextSibling.clientWidth == 0) {
                         e.nextSibling.remove();
