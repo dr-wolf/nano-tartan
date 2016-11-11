@@ -1,21 +1,20 @@
 (function() {
-    var popup = document.createElement("div");
+    var popup = document.createElement("div"),
+        thread = document.createElement("div"),
+        timer;
+
     popup.className = "popup";
-
-    var thread = document.createElement("div");
     thread.className = "thread";
-
-    var timer;
 
     function makecheckbox(value, onclick) {
         var check = document.createElement("input");
         check.id = "mirrored";
         check.type = "checkbox";
         if (value) {
-          check.checked = "true";
+            check.checked = "true";
         }
         if (onclick) {
-          check.addEventListener("click", onclick);
+            check.addEventListener("click", onclick);
         }
         return check;
     }
@@ -31,20 +30,20 @@
     }
 
     function tohex(color) {
-          return "#" + color.map(function(c){
-              return ("0" + Number(c).toString(16)).substr(-2).toUpperCase();
-          }).join("");
+        return "#" + color.map(function(c) {
+            return ("0" + Number(c).toString(16)).substr(-2).toUpperCase();
+        }).join("");
     }
 
     function asstr(sett) {
         var text = "";
-        for (c in sett.palette) {
+        for (var c in sett.palette) {
             text += c + tohex(sett.palette[c]) + "; ";
         }
-       for (var i = 0; i < sett.threads.length; i++) {
-           text += " " + sett.threads[i].color + ((sett.mirrored && (i == 0 || i == sett.threads.length - 1)) ? "/" : "") + sett.threads[i].width;
-       }
-       return text.replace("  ", " ");
+        for (var i = 0; i < sett.threads.length; i++) {
+            text += " " + sett.threads[i].color + ((sett.mirrored && (i == 0 || i == sett.threads.length - 1)) ? "/" : "") + sett.threads[i].width;
+        }
+        return text.replace("  ", " ");
     }
 
     function callupdate(onchange, sett) {
@@ -57,7 +56,8 @@
     }
 
     function makesett(editor) {
-        var threads = [], palette = {};
+        var threads = [],
+            palette = {};
         for (var i = 0; i < editor.childNodes.length; i++) {
             if (editor.childNodes[i].className == "thread" && editor.childNodes[i].clientWidth > 0) {
                 palette[editor.childNodes[i].color] = fromhex(editor.childNodes[i].style.backgroundColor);
@@ -66,7 +66,7 @@
                     width: editor.childNodes[i].clientWidth
                 });
             }
-        }  
+        }
         return {
             threads: threads,
             palette: palette,
@@ -133,7 +133,7 @@
             editor.appendChild(d);
             editor.appendChild(thread.cloneNode());
         }
-        editor.appendChild(makecheckbox(sett.mirrored, function(e) {
+        editor.appendChild(makecheckbox(sett.mirrored, function() {
             callupdate(onchange, makesett(editor));
         }));
         clear(popup);
