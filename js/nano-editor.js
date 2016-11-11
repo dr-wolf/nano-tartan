@@ -91,7 +91,7 @@
             var e = event.target;
             console.log(event.deltaY);
             if (e.className == "thread") {
-                var d = -event.deltaY / 100;
+                var d = event.deltaY < 0 ? 1 : -1;
                 if (d > 0 && e.clientWidth == 0) {
                     e.style.backgroundColor = "#FFFFFF";
                     e.parentNode.insertBefore(thread.cloneNode(), e);
