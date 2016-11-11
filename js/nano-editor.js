@@ -90,7 +90,7 @@
         editor.addEventListener("wheel", function(event) {
             var e = event.target;
             if (e.className == "thread") {
-                var d = event.deltaY / 100;
+                var d = -event.deltaY / 100;
                 if (d > 0 && e.clientWidth == 0) {
                     e.style.backgroundColor = "#FFFFFF";
                     e.parentNode.insertBefore(thread.cloneNode(), e);
