@@ -16,12 +16,32 @@
         padding: 10px 0px;
       }
     </style>
-    <script type="text/javascript" src="script.js"></script>
+    <link rel="stylesheet" href="css/editor.css">
+    <script type="text/javascript" src="js/nano-tartan.js"></script>
+    <script type="text/javascript" src="js/nano-editor.js"></script>
+    <script type="text/javascript">
+      document.addEventListener("DOMContentLoaded", function(event) {
+        var canvas = document.getElementById("tartan");
+        document.getElementById('sett').value = window.location.hash.substr(1) ? decodeURIComponent(window.location.hash.substr(1)) : "B32 Y32";
+        var update = function() {
+          window.sett = window.nanotartan.parse(document.getElementById('sett').value);
+          window.nanotartan.render(canvas, window.sett);
+        };
+        document.getElementById('render').addEventListener('click', update, false);
+        window.addEventListener('resize', update);
+        update();
+
+        window.nanoeditor(document.getElementById("editor"), window.sett, window.nanotartan.palette, function(sett) {
+          window.nanotartan.render(canvas, sett);
+        });
+      });
+    </script>
   </head>
   <body>
     <div class="head">
       <input type="text" id="sett">
       <button id="render">Render</button>
+      <div id="editor"></div>
     </div>
     <canvas id="tartan"></canvas>
   </body>

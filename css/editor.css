@@ -1,0 +1,26 @@
+#editor {
+  width: 90%;
+  margin-top: 10px;
+}
+
+#editor div {
+  display: inline-block;
+  height: 20px;
+  border: 2px solid rgba(255, 255, 255, 0.75);
+}
+
+.popup {
+  width: 132px;
+  position: absolute;
+  background-color: rgba(255, 255, 255, 0.75);
+  padding: 1px;
+  line-height: 0px;
+}
+
+.popup .item {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+  margin: 1px;
+}
