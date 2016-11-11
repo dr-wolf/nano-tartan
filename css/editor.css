@@ -8,6 +8,7 @@
   height: 20px;
   background-color: transparent;
   border: 2px solid rgba(255, 255, 255, 0.75);
+  margin: 0px 1px;
 }
 
 #editor input {
