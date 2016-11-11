@@ -66,7 +66,7 @@
                     width: editor.childNodes[i].clientWidth
                 });
             }
-        }  console.log(editor.getElementsByTagName("input"));
+        }  
         return {
             threads: threads,
             palette: palette,
