@@ -11,7 +11,7 @@
       .head {
         position: absolute;
         width: 100%;
-        background-color: rgba(255, 255, 255, 0.5);
+        background-color: rgba(0, 0, 0, 0.5);
         text-align: center;
         padding: 10px 0px;
       }
@@ -22,18 +22,19 @@
     <script type="text/javascript">
       document.addEventListener("DOMContentLoaded", function(event) {
         var canvas = document.getElementById("tartan");
-        document.getElementById('sett').value = window.location.hash.substr(1) ? decodeURIComponent(window.location.hash.substr(1)) : "B32 Y32";
-        var update = function() {
-          window.sett = window.nanotartan.parse(document.getElementById('sett').value);
-          window.nanotartan.render(canvas, window.sett);
-        };
-        document.getElementById('render').addEventListener('click', update, false);
-        window.addEventListener('resize', update);
-        update();
-
-        window.nanoeditor(document.getElementById("editor"), window.sett, window.nanotartan.palette, function(sett) {
+        document.getElementById('sett').value = window.location.hash.substr(1) ? decodeURIComponent(window.location.hash.substr(1)) : "B#0080FF; Y#FFFF00; B32 Y32";
+        document.getElementById('render').addEventListener('click', function() {
+          var sett = window.nanotartan.parse(document.getElementById('sett').value);
           window.nanotartan.render(canvas, sett);
+          window.nanoeditor(document.getElementById("editor"), sett, function(sett, text) {
+            window.nanotartan.render(canvas, sett);
+            document.getElementById('sett').value = text;
+          });
+        }, false);
+        window.addEventListener('resize', function() {
+          window.nanotartan.render(canvas, window.nanotartan.parse(document.getElementById('sett').value));
         });
+        document.getElementById('render').click();
       });
     </script>
   </head>

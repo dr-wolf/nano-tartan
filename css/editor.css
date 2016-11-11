@@ -3,14 +3,21 @@
   margin-top: 10px;
 }
 
-#editor div {
+#editor .thread {
   display: inline-block;
   height: 20px;
+  background-color: transparent;
   border: 2px solid rgba(255, 255, 255, 0.75);
 }
 
+#editor input {
+  width: auto;
+  margin: 4px;
+  vertical-align: super;
+}
+
 .popup {
-  width: 132px;
+  max-width: 132px;
   position: absolute;
   background-color: rgba(255, 255, 255, 0.75);
   padding: 1px;

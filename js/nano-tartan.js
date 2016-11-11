@@ -1,92 +1,94 @@
-(function () {
-  var palette = {
-    A: [0x0D, 0x47, 0xA1], B: [0x21, 0x96, 0xF3], G: [0x43, 0xA0, 0x47],
-    I: [0x3F, 0x51, 0xB5], K: [0x00, 0x00, 0x00], N: [0x9E, 0x9E, 0x9E],
-    O: [0xFF, 0x98, 0x00], P: [0x9C, 0x27, 0xB0], R: [0xF4, 0x43, 0x36],
-    T: [0x79, 0x55, 0x48], W: [0xFF, 0xFF, 0xFF], Y: [0xFF, 0xEB, 0x3B]
-  };
-
-  function mirror(sett) {
-    if (sett.length > 2 && sett[0].match('/') && sett[sett.length - 1].match('/')) {
-      sett[0] = sett[0].replace('/', '');
-      sett[sett.length - 1] = sett[sett.length - 1].replace('/', '');
-      for (var i = sett.length - 2; i > 0; i--) {
-        sett.push(sett[i]);
-      }
+(function() {
+    function fromhex(color) {
+        var c = parseInt('0x' + color);
+        return [(c & 0xFF0000) >> 16, (c & 0xFF00) >> 8, c & 0xFF];
     }
-    return sett;
-  }
 
-  function sarge(x, y) {
-    return Math.abs(x - y) % 4 < 2 ? 0 : 1;
-  }
-
-  function mix(posx, posy, width, height, colors) {
-    var blob = new Uint8ClampedArray(4 * width * height);
-    for (var y = 0; y < height; y++) {
-      for (var x = 0; x < width; x++) {
-        var t = colors[sarge(posx + x, posy + y)].concat(255);
-        for (var c = 0; c < 4; c++) {
-          blob[(y * width + x) * 4 + c] = t[c];
+    function getthreads(sett) {
+        var threads = sett.threads;
+        if (sett.mirrored) {
+            return threads.concat(threads.slice(1, threads.length - 1).reverse());
         }
-      }
+        return threads;
     }
-    return new ImageData(blob, width, height);
-  }
 
-  function multiply(canvas, width, height) {
-    var ctx = canvas.getContext("2d");
-    var patt = ctx.getImageData(0, 0, width, height);
-    var y = 0;
-    while (y < canvas.height) {
-      var x = 0;
-      while (x < canvas.width) {
-        ctx.putImageData(patt, x, y);
-        x += width;
-      }
-      y += height;
+    function sarge(x, y) {
+        return Math.abs(x - y) % 4 < 2 ? 0 : 1;
     }
-  }
 
-  window.nanotartan = {
-    palette: palette,
-    render: function (canvas, sett) {
-      canvas.width = canvas.clientWidth;
-      canvas.height = canvas.clientHeight;
-      var ctx = canvas.getContext("2d");
-      var py = 0;
-      for (var y = 0; y < sett.threads.length; y++) {
-        var px = 0;
-        for (var x = 0; x < sett.threads.length; x++) {
-          if (sett.threads[x].color == sett.threads[y].color) {
-            ctx.fillStyle = "rgb(" + sett.threads[y].color.join(",") + ")";
-            ctx.fillRect(px, py, sett.threads[x].width, sett.threads[y].width);
-          } else {
-            ctx.putImageData(mix(px, py, sett.threads[x].width, sett.threads[y].width,
-              [sett.threads[x].color, sett.threads[y].color]), px, py);
-          }
-          px += sett.threads[x].width;
+    function mixcolors(sett, a, b) {
+        return [sett.palette[a], sett.palette[b]]
+    }
+
+    function mix(posx, posy, width, height, colors) {
+        var blob = new Uint8ClampedArray(4 * width * height);
+        for (var y = 0; y < height; y++) {
+            for (var x = 0; x < width; x++) {
+                var t = colors[sarge(posx + x, posy + y)].concat(255);
+                for (var c = 0; c < 4; c++) {
+                    blob[(y * width + x) * 4 + c] = t[c];
+                }
+            }
         }
-        py += sett.threads[y].width;
-      }
-      multiply(canvas, sett.width, sett.width);
-    },
-    parse: function (sett) {
-      var threads = mirror(sett.replace(/([A-Z]+)(#|=|=#)([0-9A-F]{6})[^;]*;/gi, function(m, n, s, c){
-          var color = parseInt('0x' + c);
-          palette[n] = [(color & 0xFF0000) >> 16, (color & 0x00FF00) >> 8, color & 0x0000FF];
-          return '';
-        }).match(/[A-Z]+\/?[0-9]+/gi)).map(function (t) {
-        var [c, w] = t.match(/[A-Z]+|[0-9]+/gi);
-        return {
-          color: palette[c] ? palette[c] : palette.W,
-          width: parseInt(w)
-        };
-      });
-      return {
-        threads: threads,
-        width: threads.reduce(function(w, t){ return w + t.width; }, 0)
-      };
+        return new ImageData(blob, width, height);
     }
-  };
+
+    function multiply(canvas, width, height) {
+        var ctx = canvas.getContext("2d");
+        var patt = ctx.getImageData(0, 0, width, height);
+        var y = 0;
+        while (y < canvas.height) {
+            var x = 0;
+            while (x < canvas.width) {
+                ctx.putImageData(patt, x, y);
+                x += width;
+            }
+            y += height;
+        }
+    }
+
+    window.nanotartan = {
+        render: function(canvas, sett) {
+            canvas.width = canvas.clientWidth;
+            canvas.height = canvas.clientHeight;
+            var ctx = canvas.getContext("2d");
+            var threads = getthreads(sett);
+            var py = 0;
+            for (var y = 0; y < threads.length; y++) {
+                var px = 0;
+                for (var x = 0; x < threads.length; x++) {
+                    if (threads[x].color == threads[y].color) {
+                        ctx.fillStyle = "rgb(" + sett.palette[threads[y].color].join(",") + ")";
+                        ctx.fillRect(px, py, threads[x].width, threads[y].width);
+                    } else {
+                        ctx.putImageData(mix(px, py, threads[x].width, threads[y].width, mixcolors(sett, threads[x].color, threads[y].color)), px, py);
+                    }
+                    px += threads[x].width;
+                }
+                py += threads[y].width;
+            }
+            multiply(canvas, px, py);
+        },
+        parse: function(sett) {
+            var palette = {W: [0xFF, 0xFF, 0xFF]};
+            var tokens = sett.replace(/([A-Z]+)(#|=|=#)([0-9A-F]{6})[^;]*;/gi, function(m, n, s, c) {
+                palette[n] = fromhex(c);
+                return '';
+            }).match(/[A-Z]+\/?[0-9]+/gi);
+            var mirrored = tokens.length > 2 && !!tokens[0].match('/') && !!tokens[tokens.length - 1].match('/');
+            var threads = [];
+            for (var i = 0; i < tokens.length; i++) {
+                var [c, w] = tokens[i].match(/[A-Z]+|[0-9]+/gi);
+                threads.push({
+                    color: palette[c] ? c : "W",
+                    width: parseInt(w)
+                });
+            };
+            return {
+                threads: threads,
+                palette: palette,
+                mirrored: mirrored
+            };
+        }
+    };
 })();
