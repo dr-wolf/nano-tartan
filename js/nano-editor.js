@@ -89,7 +89,6 @@
 
         editor.addEventListener("wheel", function(event) {
             var e = event.target;
-            console.log(event.deltaY);
             if (e.className == "thread") {
                 var d = event.deltaY < 0 ? 1 : -1;
                 if (d > 0 && e.clientWidth == 0) {
